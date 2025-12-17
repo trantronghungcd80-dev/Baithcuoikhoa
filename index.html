@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechNova - Cửa Hàng Điện Tử Tương Lai</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Tùy chỉnh theme màu tối, font công nghệ */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        :root {
+            --primary-color: #06b6d4; /* Cyan */
+            --accent-color: #f87171; /* Red */
+            --dark-bg: #0f172a; /* Slate 900 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: #e2e8f0; /* Slate 200 */
+            scroll-behavior: smooth;
+        }
+        .neon-text {
+            color: var(--primary-color);
+            text-shadow: 0 0 5px rgba(6, 182, 212, 0.6), 0 0 10px rgba(6, 182, 212, 0.4);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+            transition: background-color 0.3s, box-shadow 0.3s;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background-color: #0891b2;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+        }
+        .section-title {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        .product-card {
+            background-color: #1e293b; /* Slate 800 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s, opacity 0.5s;
+            cursor: pointer; /* Thêm con trỏ cho thẻ sản phẩm */
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(6, 182, 212, 0.2);
+        }
+        /* Style cho Dropdown Category */
+        #category-menu {
+            position: absolute;
+            z-index: 50;
+            top: 100%;
+            left: 0;
+            min-width: 12rem;
+        }
+        /* Đảm bảo mô tả không bị tràn trên mobile */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .product-list-container {
+             transition: opacity 0.3s ease-in-out;
+        }
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navbar -->
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="text-3xl font-bold neon-text">TechNova</div>
+
+            <!-- Navigation Links -->
+            <nav class="space-x-4 flex items-center">
+                <button onclick="showView('shop-view')" class="text-gray-200 hover:neon-text font-medium transition duration-200 p-2 rounded">
+                    Cửa Hàng
+                </button>
+                
+                <!-- Category Dropdown -->
+                <div id="category-dropdown-btn" class="relative group"> 
+                    <button class="text-gray-200 hover:neon-text font-medium transition duration-200 p-2 rounded flex items-center">
+                        Danh Mục
+                        <svg class="w-4 h-4 ml-1 transform transition-transform group-hover:rotate-180" id="dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <!-- Menu thả xuống - Ẩn mặc định, hiện khi hover group -->
+                    <div id="category-menu" class="hidden group-hover:block bg-gray-800 rounded-lg shadow-xl py-1">
+                        <a href="javascript:void(0)" onclick="navigateToSection('#featured-section')" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700">Sản Phẩm Hot & Sale</a>
+                        <a href="javascript:void(0)" onclick="navigateToSection('#phone-section')" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700">Điện Thoại</a>
+                        <a href="javascript:void(0)" onclick="navigateToSection('#computer-section')" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700">Máy Tính</a>
+                        <a href="javascript:void(0)" onclick="navigateToSection('#headphone-section')" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700">Phụ kiện & Âm thanh</a>
+                    </div>
+                </div>
+
+                <button onclick="showView('contact-view')" class="text-gray-200 hover:neon-text font-medium transition duration-200 p-2 rounded">
+                    Liên Hệ
+                </button>
+            </nav>
+
+            <!-- Cart Icon -->
+            <button onclick="toggleCartModal()" class="relative p-2 rounded-full hover:bg-gray-700 transition duration-200">
+                <svg class="w-6 h-6 neon-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <span id="cart-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- SHOP VIEW -->
+    <main id="shop-view" class="container mx-auto px-4 py-8">
+        
+        <!-- Search, Filter and Sort Section -->
+        <section class="mb-10 p-6 bg-gray-800 rounded-xl shadow-2xl">
+            <h2 class="text-2xl font-semibold mb-4 neon-text">Tìm kiếm, Lọc & Sắp xếp Sản phẩm</h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <!-- Text Search -->
+                <div class="md:col-span-2">
+                    <label for="search-text" class="block text-sm font-medium text-gray-400 mb-2">Tìm theo Tên/Mô tả/Category:</label>
+                    <input type="text" id="search-text" onkeyup="filterAndSortProducts()" placeholder="Nhập tên sản phẩm hoặc mô tả..." class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500">
+                </div>
+                <!-- Price Range Filter -->
+                <div>
+                    <label for="min-price" class="block text-sm font-medium text-gray-400 mb-2">Giá Tối Thiểu (VNĐ):</label>
+                    <!-- Dùng oninput để cập nhật real-time -->
+                    <input type="number" id="min-price" oninput="filterAndSortProducts()" value="0" min="0" class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500">
+                </div>
+                <div>
+                    <label for="max-price" class="block text-sm font-medium text-gray-400 mb-2">Giá Tối Đa (VNĐ):</label>
+                    <!-- Dùng oninput để cập nhật real-time -->
+                    <input type="number" id="max-price" oninput="filterAndSortProducts()" value="50000000" min="10000" class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500">
+                </div>
+            </div>
+            
+            <!-- Sorting Dropdown -->
+            <div class="mt-6 md:w-1/3">
+                <label for="sort-by" class="block text-sm font-medium text-gray-400 mb-2">Sắp xếp theo:</label>
+                <select id="sort-by" onchange="filterAndSortProducts()" class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500 appearance-none cursor-pointer">
+                    <option value="default">Mặc định (ID)</option>
+                    <option value="price-asc">Giá (Tăng dần)</option>
+                    <option value="price-desc">Giá (Giảm dần)</option>
+                    <option value="rating-desc">Đánh giá (Cao nhất)</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Product List Containers -->
+        
+        <!-- Featured and Sale Products -->
+        <section id="featured-section" class="mb-12 pt-16 -mt-16">
+            <h2 class="text-3xl font-bold section-title">🔥 Sản Phẩm HOT & SALE</h2>
+            <!-- CHÚ Ý: Đã đổi lg:grid-cols-4 thành lg:grid-cols-3 -->
+            <div id="featured-products-list" class="product-list-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Products will be rendered here -->
+            </div>
+            <!-- Pagination for Featured Section -->
+            <div id="featured-pagination" class="flex justify-center items-center space-x-4 mt-6"></div>
+        </section>
+
+        <!-- Điện Thoại (Phones) -->
+        <section id="phone-section" class="mb-12 pt-16 -mt-16">
+            <h2 class="text-3xl font-bold section-title">📱 Khu Điện Thoại</h2>
+            <!-- CHÚ Ý: Đã đổi lg:grid-cols-4 thành lg:grid-cols-3 -->
+            <div id="phone-products-list" class="product-list-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Products will be rendered here -->
+            </div>
+            <!-- Pagination for Phone Section -->
+            <div id="phone-pagination" class="flex justify-center items-center space-x-4 mt-6"></div>
+        </section>
+
+        <!-- Máy Tính (Computers) -->
+        <section id="computer-section" class="mb-12 pt-16 -mt-16">
+            <h2 class="text-3xl font-bold section-title">💻 Khu Máy Tính</h2>
+            <!-- CHÚ Ý: Đã đổi lg:grid-cols-4 thành lg:grid-cols-3 -->
+            <div id="computer-products-list" class="product-list-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Products will be rendered here -->
+            </div>
+            <!-- Pagination for Computer Section -->
+            <div id="computer-pagination" class="flex justify-center items-center space-x-4 mt-6"></div>
+        </section>
+        
+        <!-- Phụ kiện & Âm thanh (Accessories & Audio) -->
+        <section id="headphone-section" class="mb-12 pt-16 -mt-16">
+            <h2 class="text-3xl font-bold section-title">🎧 Khu Phụ kiện & Âm thanh</h2>
+            <!-- CHÚ Ý: Đã đổi lg:grid-cols-4 thành lg:grid-cols-3 -->
+            <div id="headphone-products-list" class="product-list-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Products will be rendered here -->
+            </div>
+            <!-- Pagination for Accessory Section -->
+            <div id="headphone-pagination" class="flex justify-center items-center space-x-4 mt-6"></div>
+        </section>
+
+    </main>
+
+    <!-- CONTACT VIEW -->
+    <main id="contact-view" class="container mx-auto px-4 py-8 hidden">
+        <section class="p-8 bg-gray-800 rounded-xl shadow-2xl max-w-3xl mx-auto">
+            <h2 class="text-4xl font-bold mb-6 text-center neon-text">📞 Trang Liên Hệ</h2>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Contact Info -->
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-cyan-400">Thông Tin Liên Lạc</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M14.243 5.757a6 6 0 10-.986 9.257l1.378 1.378a1 1 0 001.414-1.414l-1.378-1.378A6 6 0 0014.243 5.757zM10 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg>
+                            <strong>Địa chỉ:</strong> Khu Công Nghệ Cao, Thành phố Thủ Đức, TP.HCM
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.774a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.06-.54l4.435.74A1 1 0 0118 18v2a1 1 0 01-1 1H3a1 1 0 01-1-1V3z"></path></svg>
+                            <strong>Điện thoại:</strong> (028) 38.TECH.NOVA
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
+                            <strong>Email:</strong> support@technova.vn
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contact Form -->
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 text-cyan-400">Gửi Yêu Cầu Hỗ Trợ</h3>
+                    <form onsubmit="handleContactSubmit(event)" class="space-y-4">
+                        <div>
+                            <label for="contact-name" class="block text-sm font-medium text-gray-400">Họ và Tên</label>
+                            <input type="text" id="contact-name" required class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500">
+                        </div>
+                        <div>
+                            <label for="contact-email" class="block text-sm font-medium text-gray-400">Email</label>
+                            <input type="email" id="contact-email" required class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500">
+                        </div>
+                        <div>
+                            <label for="contact-message" class="block text-sm font-medium text-gray-400">Nội dung</label>
+                            <textarea id="contact-message" rows="4" required class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary w-full p-3 rounded-lg">Gửi Yêu Cầu</button>
+                        <div id="contact-message-box" class="mt-4 p-3 rounded-lg text-sm hidden"></div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 border-t border-gray-700 mt-12 py-6">
+        <div class="container mx-auto px-4 text-center text-gray-400">
+            <p>&copy; 2025 TechNova. Thiết kế cho bài thuyết trình Web.</p>
+        </div>
+    </footer>
+
+    <!-- CART MODAL (Cải tiến) -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-[100] items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-xl max-h-[80vh] flex flex-col p-6">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
+                <h2 class="text-2xl font-bold neon-text">🛒 Giỏ Hàng Của Bạn</h2>
+                <button onclick="toggleCartModal()" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            
+            <div id="cart-items-list" class="flex-grow overflow-y-auto space-y-4 pr-2">
+                <!-- Cart items will be rendered here -->
+            </div>
+
+            <div class="border-t border-gray-700 pt-4 mt-4">
+                <div class="flex justify-between items-center text-xl font-bold mb-4">
+                    <span>Tổng Tiền:</span>
+                    <span id="cart-total" class="neon-text">0 VNĐ</span>
+                </div>
+                <button onclick="checkout()" class="btn-primary w-full p-3 rounded-lg">Thanh Toán Ngay</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PRODUCT DETAIL MODAL (MỚI) -->
+    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-[101] items-center justify-center p-4">
+        <div class="bg-gray-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden">
+            <!-- Product Image Section -->
+            <div class="md:w-1/2 p-6 bg-gray-800 flex items-center justify-center">
+                <img id="detail-image" src="" alt="[Image of Product]" class="max-h-full max-w-full object-contain rounded-lg">
+            </div>
+            
+            <!-- Product Info Section -->
+            <div class="md:w-1/2 p-6 overflow-y-auto">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 id="detail-name" class="text-3xl font-bold text-cyan-400"></h2>
+                    <button onclick="closeDetailModal()" class="text-gray-400 hover:text-white text-3xl leading-none ml-4">&times;</button>
+                </div>
+
+                <div class="space-y-4">
+                    <div id="detail-rating" class="text-yellow-400 font-medium text-lg"></div>
+                    <p id="detail-category" class="text-sm text-gray-400"></p>
+                    <p id="detail-description" class="text-gray-300 border-l-2 border-cyan-500 pl-3 py-1"></p>
+
+                    <!-- Price Block -->
+                    <div id="detail-price-block" class="py-3 border-t border-b border-gray-700">
+                        <span class="text-xl font-medium text-gray-400 block">Giá Bán:</span>
+                        <div class="flex items-baseline space-x-3">
+                            <span id="detail-price" class="text-4xl font-bold neon-text"></span>
+                            <span id="detail-old-price" class="text-lg line-through text-gray-500"></span>
+                        </div>
+                    </div>
+
+                    <!-- Quantity and Add to Cart -->
+                    <div class="flex items-center space-x-4">
+                        <label for="detail-quantity" class="text-gray-300">Số lượng:</label>
+                        <input type="number" id="detail-quantity" value="1" min="1" class="w-20 p-2 rounded-lg bg-gray-700 text-white border border-gray-600 text-center">
+                    </div>
+
+                    <button id="detail-add-to-cart-btn" onclick="addToCartFromDetail()" class="btn-primary w-full p-3 rounded-lg text-lg mt-4">
+                        Thêm vào Giỏ hàng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Message Box (Instead of alert()) -->
+    <div id="message-box" class="fixed bottom-4 right-4 z-[102] p-4 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform translate-x-full opacity-0">
+        <!-- Message content here -->
+    </div>
+
+
+<script>
+    // --- DỮ LIỆU SẢN PHẨM MẪU (ID 1-8: Cố định) ---
+    const baseProducts = [
+        // SẢN PHẨM ID 1: Điện Thoại Alpha 7 Pro (Hot)
+        { 
+            id: 1, 
+            name: "Điện Thoại Alpha 7 Pro (Hot)", 
+            category: "Điện thoại", 
+            price: 21990000, 
+            oldPrice: null, 
+            description: "Chip thế hệ mới, 12GB RAM, Camera 50MP. Thiết kế mỏng, sang trọng, hiệu năng gaming vượt trội, tản nhiệt buồng hơi lớn.", 
+            rating: 4.9, 
+            isHot: true, 
+            isSale: false, 
+            specs: "Chip: Snapdragon 8 Gen 3; RAM: 12GB; Bộ nhớ: 256GB/512GB; Màn hình: 6.7 inch Dynamic AMOLED 120Hz.", 
+            image: "https://cdn2.cellphones.com.vn/x/media/catalog/product/r/e/realme-7-pro-1.jpg" // <-- Thay thế URL này (Ảnh: Điện Thoại Alpha 7 Pro)
+        }, 
+        
+        // SẢN PHẨM ID 2: Điện Thoại Beta X Lite (Sale)
+        { 
+            id: 2, 
+            name: "Điện Thoại Beta X Lite (Sale)", 
+            category: "Điện thoại", 
+            price: 10990000, 
+            oldPrice: 12990000, 
+            description: "Giá cực tốt, màn hình AMOLED 6.5 inch, pin 5000mAh, camera chụp đêm ấn tượng.", 
+            rating: 4.5, 
+            isHot: false, 
+            isSale: true, 
+            specs: "Chip: MediaTek Helio G99; RAM: 8GB; Pin: 5000mAh; Camera chính: 64MP.", 
+            image: "https://cdn.tgdd.vn/Files/2022/08/16/1456675/xiaomi_1280x1280-800-resize.jpg" // <-- Thay thế URL này (Ảnh: Điện Thoại Beta X Lite)
+        }, 
+        
+        // SẢN PHẨM ID 3: Điện Thoại Gamma G5
+        { 
+            id: 3, 
+            name: "Điện Thoại Gamma G5", 
+            category: "Điện thoại", 
+            price: 15500000, 
+            oldPrice: null, 
+            description: "Hiệu năng mạnh mẽ, chống nước IP68, 256GB bộ nhớ, màu sắc Gradient đẹp mắt.", 
+            rating: 4.7, 
+            isHot: false, 
+            isSale: false, 
+            specs: "Chip: Exynos 2400; RAM: 12GB; Chống nước: IP68; Bộ nhớ: 256GB.", 
+            image: "https://cdn.kalvo.com/uploads/img/large/72397-umidigi-g9x.jpg" // <-- Thay thế URL này (Ảnh: Điện Thoại Gamma G5)
+        }, 
+        
+        // SẢN PHẨM ID 4: Laptop UltraBook Z1 (Hot)
+        { 
+            id: 4, 
+            name: "Laptop UltraBook Z1 (Hot)", 
+            category: "Máy tính", 
+            price: 32500000, 
+            oldPrice: null, 
+            description: "Core i9 Gen 14, 32GB RAM, màn hình 4K OLED. Siêu mỏng nhẹ, pin 15 giờ, hoàn hảo cho công việc và giải trí.", 
+            rating: 4.9, 
+            isHot: true, 
+            isSale: false, 
+            specs: "CPU: Intel Core i9-14900H; RAM: 32GB LPDDR5X; Màn hình: 14 inch 4K OLED; Pin: 80Wh.", 
+            image: "https://cohotech.vn/wp-content/uploads/2025/08/ASUS-Zenbook-14-OLED-UX3405-8.jpg" // <-- Thay thế URL này (Ảnh: Laptop UltraBook Z1)
+        }, 
+        
+        // SẢN PHẨM ID 5: Máy Tính Gaming Delta (Sale)
+        { 
+            id: 5, 
+            name: "Máy Tính Gaming Delta (Sale)", 
+            category: "Máy tính", 
+            price: 19990000, 
+            oldPrice: 24990000, 
+            description: "VGA RTX 4060, 16GB RAM, SSD 1TB. Chiến mọi game, tản nhiệt chất lỏng hiệu suất cao.", 
+            rating: 4.6, 
+            isHot: false, 
+            isSale: true, 
+            specs: "GPU: NVIDIA RTX 4060 8GB; RAM: 16GB DDR5; Ổ cứng: 1TB SSD NVMe; Tản nhiệt nước AIO 240mm.", 
+            image: "https://tanphat.com.vn/media/product/9963_27610_laptop_asus_vivobook_15_x1502va_bq885w_04.jpg" // <-- Thay thế URL này (Ảnh: Máy Tính Gaming Delta)
+        }, 
+        
+        // SẢN PHẨM ID 6: Macbook Air M3 Pro (Hot)
+        { 
+            id: 6, 
+            name: "Macbook Air M3 Pro (Hot)", 
+            category: "Máy tính", 
+            price: 41000000, 
+            oldPrice: null, 
+            description: "Chip M3 Pro mạnh mẽ, thời lượng pin 18 giờ, vỏ nhôm nguyên khối, tối ưu cho lập trình và đồ họa.", 
+            rating: 5.0, 
+            isHot: true, 
+            isSale: false, 
+            specs: "CPU: Apple M3 Pro 12-core; RAM: 18GB Unified Memory; Màn hình: 14.2 inch Liquid Retina XDR; Pin: 18 giờ.", 
+            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDf8nLEm1qTKxuL_UXgUf7VVw30k_0dqlc8A&s" // <-- Thay thế URL này (Ảnh: Macbook Air M3 Pro)
+        }, 
+        
+        // SẢN PHẨM ID 7: Tai Nghe Wireless Echo 3 (Hot)
+        { 
+            id: 7, 
+            name: "Tai Nghe Wireless Echo 3 (Hot)", 
+            category: "Phụ kiện & Âm thanh", 
+            price: 3500000, 
+            oldPrice: null, 
+            description: "Chống ồn chủ động (ANC) hàng đầu, âm thanh Hi-Res, 30 giờ pin, đệm tai mềm mại, có cổng sạc Type-C.", 
+            rating: 4.7, 
+            isHot: true, 
+            isSale: false, 
+            specs: "Tính năng: ANC, Xuyên âm; Pin: 30 giờ; Kết nối: Bluetooth 5.3; Âm thanh: LDAC Codec.", 
+            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSiNO4IRTImzNoJJB9c_DzynBGE72AT1KUXIA&s" // <-- Thay thế URL này (Ảnh: Tai Nghe Wireless Echo 3)
+        }, 
+        
+        // SẢN PHẨM ID 8: Tai Nghe Gaming Phantom
+        { 
+            id: 8, 
+            name: "Tai Nghe Gaming Phantom", 
+            category: "Phụ kiện & Âm thanh", 
+            price: 2100000, 
+            oldPrice: null, 
+            description: "Micro khử tiếng ồn, đèn LED RGB, âm thanh vòm 7.1, đệm tai thoáng khí, dây cáp siêu bền.", 
+            rating: 4.8, 
+            isHot: false, 
+            isSale: false, 
+            specs: "Âm thanh: 7.1 Surround; Kết nối: USB/3.5mm; Micro: Khử tiếng ồn; Đèn: RGB.", 
+            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhEW_7QP3lU9IJ40jncBkmICrgpNDxPQYHnw&s" // <-- Thay thế URL này (Ảnh: Tai Nghe Gaming Phantom)
+        }, 
+    ];
+    
+    // --- DỮ LIỆU SẢN PHẨM PHỤ (ID 9-18: Đã gán Category cố định) ---
+    const dynamicProductData = [
+        // ID 9: Phụ kiện & Âm thanh (Đồng hồ/vòng đeo tay thông minh)
+        { 
+            id: 9, 
+            category: "Phụ kiện & Âm thanh", 
+            name: "Đồng Hồ Thông Minh Series 9", 
+            image: "data:image/jpeg;base64,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6lgsyW2jhv6uW2pbvsd7Sbi9yD55xfD5qOZ0FRGY5G72niODmnc5p4EL1wtVtFs5TYhF1VTE2Qa5Tuew82PGrT3b+KDyj1ydcrN2i6FaiK7qOVs7eEclo5bcg70HntORQDE9ma2mP01JOz7XVucz9o27figwDMut0i6TKOY94S6CSUG0tR5I+ibO5kchBI4O0sWE7wDpe2+2txcLVijI3ha4rLp8Sc0Wd5w+IQfJZGtHHuAN19YMwuAfEWWW2ra/c9vc4a/C3yRwd9Zg/ntQY7oySS495J+ZK4elo3xK2mE4HNWOywRyTn/hi7B7UhsxniQrd2L6JmxFstdle4ainbrGOXWuP9Ifsizd/pII10W9Hhqi2qqG2pwQWtO+Yjd/h9vrbhor3AtoEAtoF9QEREBERAREQEREBERAREQEREBERAREQEREHTPSxv8ATY13tNB+a1VRshh8hu+hpXHmYIb+/LdbtEEYl6PMLdvoYPBgb+7ZY7ujDCT/AGKPwdKPk5S9EEK/8KMIvfyMftai3u6yy2NFsFhkJBZQ09xqC5geQeYL769qkiIOLGBosAABuA0HuXJEQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERB/9k=" // <-- Thay thế URL này (Ảnh: Đồng hồ thông minh)
+        },
+        // ID 10: Điện thoại
+        { 
+            id: 10, 
+            category: "Điện thoại", 
+            name: "Smartphone Turbo 4 Pro", 
+            image: "https://cdn.mobilecity.vn/mobilecity-vn/images/2025/07/redmi-turbo-4-pro-vang.jpg.webp" // <-- Thay thế URL này (Ảnh: Điện thoại)
+        },
+        // ID 11: Máy tính (Màn hình/máy tính để bàn)
+        { 
+            id: 11, 
+            category: "Máy tính", 
+            name: "Màn Hình Gaming 34 Ultra", 
+            image: "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/2022_4_5_637847779904332860_pc-la-gi.jpg" // <-- Thay thế URL này (Ảnh: Màn hình)
+        },
+        // ID 12: Phụ kiện & Âm thanh (Cáp/Hub)
+        { 
+            id: 12, 
+            category: "Phụ kiện & Âm thanh", 
+            name: "Hub USB-C Đa Năng", 
+            image: "https://product.hstatic.net/200000722513/product/2-cong-audio-mic-3-5mm-ugreen-av123-1_c48bec11fa35456abb9713a39bcb3678_0c9196b56e1e441b90dc6f73c52fce1d_grande.png" // <-- Thay thế URL này (Ảnh: Cáp/Hub)
+        },
+        // ID 13: Máy tính (Laptop/máy tính)
+        { 
+            id: 13, 
+            category: "Máy tính", 
+            name: "Laptop EliteBook 7 Series", 
+            image: "https://surfacecity.vn/wp-content/uploads/L713SA-view-Elite-768x768.jpg" // <-- Thay thế URL này (Ảnh: Laptop)
+        },
+        // ID 14: Điện thoại
+        { 
+            id: 14, 
+            category: "Điện thoại", 
+            name: "Itel Vision 3 Giá Rẻ", 
+            image: "https://cdn.tgdd.vn/Products/Images/42/275639/itel-vision-3-600x600.jpg" // <-- Thay thế URL này (Ảnh: Điện thoại)
+        },
+        // ID 15: Điện thoại
+        { 
+            id: 15, 
+            category: "Điện thoại", 
+            name: "Điện Thoại Nhỏ Gọn Jelly Max", 
+            image: "https://cdn-media.sforum.vn/storage/app/media/chibao/Chi-bao-chat-luong-cao/Unihertz-Jelly-MAX/tren-tay-unihertz-jelly-max-cover-2-1.jpg" // <-- Thay thế URL này (Ảnh: Điện thoại nhỏ)
+        },
+        // ID 16: Phụ kiện & Âm thanh (Đồng hồ thông minh)
+        { 
+            id: 16, 
+            category: "Phụ kiện & Âm thanh", 
+            name: "Smart Watch GT Pro", 
+            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTQqHYrXaB3t_Z5gKMkj4fk6fLOFFZbhMouA&s" // <-- Thay thế URL này (Ảnh: Đồng hồ thông minh)
+        },
+        // SẢN PHẨM MỚI ID 17: Máy tính (PC Gaming)
+        {
+            id: 17,
+            category: "Máy tính",
+            name: "PC Gaming Thunder I9",
+            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvZXeRSFNqvAYXOwtcb6XOMGf8XW5RrWj9pg&s" // <-- Thay thế URL này (Ảnh: PC Gaming)
+        },
+        // SẢN PHẨM MỚI ID 18: Máy tính (Máy tính bảng)
+        {
+            id: 18,
+            category: "Máy tính",
+            name: "Máy Tính Bảng Pro Tab S8",
+            image: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxISEBUQEBIVFhUVFRcVFxUVFxUVFRUVFhUWFxUYFxUYHSggGB0lGxUXITEhJSkrLi4uFx8zODMtNygtLisBCgoKDg0OGhAQGi0lHyUtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIAK8BIAMBEQACEQEDEQH/xAAcAAACAgMBAQAAAAAAAAAAAAAAAQIDBAUGBwj/xAA+EAABAwIDBAcFBgUEAwAAAAABAAIDERIEBSExQVGBBgcTImFxkTJCUmKhI3KSorHBFDOC0fAkQ2ODU3Px/8QAGwEBAAMBAQEBAAAAAAAAAAAAAAECAwQFBgf/xAAyEQACAgEDAwIFAgYCAwAAAAAAAQIRAwQhMRJBUQVxEzJhgZGh8CJCUrHR4RTBBiND/9oADAMBAAIRAxEAPwD1xACAEAIBhAOiAAEBKiAkAgCiAEBxHTjrHhy9/YMj7aegLmh1rIwdl7qE1I1tA2UrSorG74JSNFlvXPHdbi8I+PxjcH082vDSPqppkuLTpnZ5R05y7E0EWKYHHYySsT+QfSvKqiyKOjHEKSAogE4gAkkADUk6ADiSgNNgelWEmn/h4Zb3agODT2biASWtkpRxoDsQG6ogHRAFEAqIAogCiAKIBUQBRAFFIFRAFEAqIBEIBFAKikgSASAFUkEAIAQDCAaAYCAkEAwgGgOV6welrMuwpfoZn1bCw73U1cR8La1PIb1D8IlKzxvojlj55DjsSS4lxc0u2vkJ70h8js8fILDPk6V0RPe9K0XU/jT4XH+fsddisHHIKSMa4fMAf1XEpSXDPfyYoZFU4p+5pMZ0Nw7/AGLmeRqPR1foQt46ma53POy+kaefy3H2/wBmJh8BmODP+jxTwNga1xaDw+zdWM81tHUQfKo8zN6Plj8jT/T9/k6DJOs7MGEsxMUUtuhOkbgRvc9hLAOS3StWmeRODhJxfKND0j6cS4p4ZNK0tc4UYLmYVlTo51KulpxNfBSku5HSz0XoLkuDZbiW4pmLmANHRub2cdRQhkbTpoaa+gVnJditHcxzE7lUF4QDQAgBACAEAkAIAUgSAEAIBICJCAEIIlSBFAJVJBACAYQDQAgJBASCAaAwc5zSLCwPxE7rY423OP6ADeSaADeSobCPnjE4qbOcwdPLVsTfdrpHECbY2n4jrU8angFWc/hxt8no6HRvUZK7Ln9/U7mKMNaGtADQAABoABoAF5rbbtn2EYqKUVwiagk1+PziOI26vf8AAzU/1HY0ea0hhlPg4tTrsOn+Z7+Fyc9iMzmxDjG0F3/HEaMH/sl3+QXXHHjxq2eJPU6vXPpxqo/T/tmxwHR2oBnIdTZG3uxN5e9zWWTUt/KejpfR8ePfJu/0MzGdG8LLq+Jt3xN7p/Lt5rGOaceGdebQ4MvzR/G39jTYjoTa6/Dzlrhsu2g+D2UI9FutV/Ujzcvoq/8AnL8/6/wZmDz/ADvBbHumYNzwMQPX+Z9VtHJCXDPLy+m6jHzG/bf/AH+h0OV9dABsxmEII2uhdrzjkpT8RWm5wuNOmdplHWBluIoGYpjHHSyasTq8BfQHkSl+SKOma4EVBqDsI1B5qSBoAQAgBAJACkAgBAJACAiUAigEhBFAJQSCAEBIIAQDCAkEAwgBzqID596yulj8zxbcHhDdAx9G02SyCt0hPwAVp4VO8UhUv4pG+HFLJJQit2bvJsrZhoWxM13udvc47Sf82ALz8mRzlbPs9Lpo6fGoR+/1ZPH5lFD7btTsYNXHyH7qIQlLgajV4sCub+3f8HM4/P5ZXdmwObXZHHrIfvO93kuqOCMN5HhZfUdRqpdGBUv1/Pb7fkyMv6NvcKzmxv8A4mHb99+9VnqO0Tp0vo6X8WZ2/B0uFwjI2hrGhoG4CgXLJuW7PajGMF0xVIvoqgFIHRAMKSCvE4GKUUljY8fM0GnlXYrxk48Mxy4seRVOKfuabF9BcM/+WXxnwNzeYdU+hC6I5pdzzMvpeGXy2v39TBw/RnM8GbsDiXUGtsbzET/1uNh5laqUWebl9Nyx+Vp/v99zZQ9Z2a4M243DiRo96VhiceH2sY7MnyatK8M4J4pQ+ZUdXlHXFgJKCdksB4lvas5Oj73q0KN/BSjtcqzzC4kVw2Iil8GPaXDzbtHMJaIo2CkgEAlIBACAEAkAigIlARKAEBFQAQDQDQAgGEBMIAQHkvXR047Jhy7DO+0ePt3DayMjSMHc5wOvBp8dIrqddiyOV6L5ZHgoe3xJDZHjYdrW7QwDaXbzTwG5c2abyPpifTaHDj0eP4uZ03+i8e/krzXpS492IFgOgNLpHfdbuUw06W8jmz+rZMr6NOvv3/HYqy/IZ5jfKTE06nfM/wAyfZUzzxjtEtp/SJzfXqH/AJ+51WXZXFC22NobxO1x83bSuWU5S5PdxYseJdMFRmgKpZslRCLCigix0QBRBZIBSRZY1qsirZkRtV0ZSZlxNWyMJsyWs0odhWqOObNTmHQvAz1L8O1pOt0VYjXibKA8wVomcGTFB9jmMf1U0N+FxJBGoErdQd1JGUp+Eq2z5OSWKuGVRz9Icv8AZdJNG3dUYph5H7UDyonQuxm4vujaZX11OabMbhNR7RhcWuB8YZNn4lWmilHa5R1kZZiKAYlsbj7s4MRrwud3DycUvyRR1cbw4BzSCDsIIIPkQhA1IBACARQESgIoBIQRUEggGEA0AIBhASQHL9YHSsYDDVjAfiJatgj21dve4fA2oJ5Deo3eyJR8+RtLJjicQ8PlLi83d77Qmtx+J1deFeKs0qo0xZJRmpRVs2+Ey7FYp3aEljT/ALkmryPkbuH0XPLLDGqR6+H0zPqZfEzv88/6OpynIYYNWtq7e92rzz3clyzySnye9g02LTqoL7m3DFmbNjopIHRQQOiEBRAOimgStRIiybWqyRVsvYxaKJm5GRHErqJjKZksjWiic8pmQxq0RzzZewKyOWRc0KxhImFYzMPMcpgxAtxEMcg+drXEeRIqOSWKTOSzTqtwUlTCZIDwa69nNr6n0IQr8NHNHoDmmCJfgMTXfSKR0DnHxjcbDzcVDimVeNl8PWVnGBNuOgEjRpWaMxE+UsdGH0KjpaKOJ1eT9c+BkoMTHLAd5p20fJzO9+VRuVcTt8oz/CYoVw2Iil8GPBcPNntDmFFkUbIqxAigIlARQEVABAMIBoBhANAYOdZrFhYH4md1scYqTvO4NA3kmgA4lQ2DwOfPMRmuKe5n2ZcO88i7s4gTZEz4RtrvcbjoNBSc+iNnoaHRf8mfTdV9Dc5R0XhhIeQZHj3360Pg3YFxyzSkfS6fQ4MC/hW/lm9axZHW2TAUlR0QgdFABANCAopQJAKURZY1qskVbLmNWiRm2XMarpGUpGTGFdIxkzIjWiOWZkMCvRzSbLmsVqMHPyWBqmjJyJBqEWFEJCiEiohJF7ARQioO0HUHkgObzXoHl89S7DtY4+9DWI1O8hvdPMFCrgjjc06oiDdhMTqNQJm61rp9pHs87UozcDDjxXSHLtjpZY2+WKYR5GsjR+FV6PBVxO06vetEY2UYXFRtjmcCWPjJ7OQtFS20klhoCRqQaHZpWrbT3KOJ6RVWKiKAgoAICQQAgGgESgPnzrM6WvzPFtweE70DH2sDf96XYZD8oFaeFTv0heWaQg5SUY8s6bIMibhYBE3V217viedp8twHALjyy63Z9fo8MdPjUVz39zPMaxo6+oKKBYwhDGUIBQAUgdEA2hKIZY0K6RRlzGrRIzbL2M8a+VFokZuRexivRi5F7Y/BXS2MZSLmMV0jnlIvZGrJGEmXtapMZIm1SZtBXgfRCo0JQISKigkRCEiogBSQa3pHmAw2EmxOlYonObXe6ndFfF1oVorfcrJ0jxvqgy4y5kyQ6iFj5CfmIsbXm8nkspbvcweyPomHYhQmgIqACAkEAIAQHk/XR037Jhy3DO77x/qHA+wwj+WDuc4Gp4Dz0ir9iUarq56LdhH/ABUzaSyN7rTtjjPhuc7QngKDiq5H2Pc0GD4a65cv9EdmYVg4nprIVugVegushW+BVcC6mVdg4tDrDYaEOo2jg6tLdau9k7v1Wr0mSr/TuT8fGpuLkuruvFeey5IFq5WjSxUQAhIBKIZIIGWMKumUaMiNaxMpGXExapHPJmS1n+bVpRhKZcyL6KyRhKRe1oG1SYykWNlGwa+G0+v7qxhJllFJSwHjRCLHr4U+qECQUSQCQkEJEQhAkB5311ZlZg48ODrNJUj5IqOP5zH6K3Zmc3whdRuWW4eXEkayyBjT8kY1/M4+ix7mMj1loUlRlARUAaAAgGgOU6xumDctwpc2hnkq2Fh473uHwtqD4mg3qPoiTx7q96OOxk7sbiquY15dV2vbTVqSeIB1PE0HFS/4Vsdukw9cuqXCPXLVkev1BYlE9QdmnSOsjNhmvaWOcRcCNAd4+LcpS3smOocGnGNr99jDGBnoGvlBYAG90Oa5wYTQEh1N+7gtpZduC/TpZTc4xfVzTdpX9KssfhvBcbgbrIUSxgCtdKa6EUpxB9UhhlOSjFW2RPUwxY5ZMjpLdtkZcM5urmOaDvI013VGw+B1XTk9OyRh1Jp1zT3X5q/seZp//INPlyLHKMo3snJbO+N03V+HXjkqLF51Hu9QqIBtchLRPtDt2eSt1FOlGRFjaUu4+NR4rSOWuTGeFPg2eHxjDsPI6LojkTOHLgmuxnxGorT91qjgnaL+yBGoBVzCUhiINHdbyFAhRyJFiEWFqCx2oLEW/wCbUJCiASEghIiEIEpIPCOt/NO1zF0Y9nDsbGPvEXvI/EB/Sk9kkZPdns3QbK/4fBYeGmrYml333d5/1JWS4MpcnShSQCAioA0ABAYWd5tFhMO/EzutZGKniTsDWjeSaADxUNg+dHyYnPMyL390HbTVsEDTo0cTrzcSeNJWy3NsOJ5ZdKPZMvwbIYmQxNtYxoa0cAP1O8neqN2e3GCiqRkgJRJINU0VbJBqmivUO1KHWBYlFlMrMR11Ou7doqdJeMldlE2FuGhoQQQdNoII0Oh1Gxa6fK8ORTSv/exlrsEdVgeKTaut12adr9UQxIe+geW6a90EXEVoTUnZU7OK6c2tj0OOKLTe27ul3S27+TztJ6PJZo5M81JRdpJVb7N23xyku/sY74l5XSfSqRjYp7WML3mjWipKti0882RY4K2y0ssYR6pcGKzFgutcx7CTQFwFpNK0DmkivhtXVn9KzYoOdppc0968062MMPqGLK+lGSQvMO2wAQiyxisirM3DTuGw/wCeS3hJo5smOMuUbOHF1oXD0J/RdCn5POy6RPg2McwO+i0UkzgyYJxLf8CsYUDHE7W05hAK81pbz0p6oSDwhKYqKCbEUJAoSJSQU4mZsbHSPNGsaXOPBrRUn0ClK3RDdKz536OwOx+aR3jWbEGV/g24yOHlQU9FTK7ujFbI+l8K3RVMzJQCKAioA0AIDzDr1wWIlw0Jha50bJCZGtBJqW0Y6g2gd78Sj+YnseY9DOmJwAewwNka9wc4g2yCgpSuoIGtAaak66qzVo6dPqfhbUemZL04wOIoBKI3n3Ju4ancHHunkVTpZ6MNVjn3r3OnCGzLGqxRlgUlGSDUK2OxCLI0GzgoLptEHMVWjWMip7FVo2jIpdGqNGikYeZZaJW2tfQhwcNNjmmoqDoR4VXTpNQ9PkWSKvlV7/2Zjnj8bE4T2+qNfDlUjXNMpbRhcQGgtDnu95wJ2gfryXbrPVIZMcoY4tOVW32Xhe5ho9DHHJScrriv+zLc1eDR7CZEgDWqJFlvsS1FC9rmgmguFK7fRavDJK2VtSbUWm14MmMf5tRIykZUY/yq1SMJGXErowkZUbzprTw01V0zlnBMyRLx+itZyyx+Cy5WszcRIiACAVFBIqISKikHG9bGZdjlkjQe9OWwt8nav/I1w5q0e7KTe1HGdSGV3YibFEaRsEbT80hq76NH4li/mMpcHuUTdEKFiARQCUAAgGgKp8O14LXAEHaDsKA4nP8Aq0ws4Ja0A7q7vJ4o4c6oDzTpB1WYiGrou835tR+No05gJZJz+FzPMcuNGvkY0e67vwnXcDVor4UKsawzThwzscl62Bo3GQEf8kOo8zG41HInyUUdUdZ/Ujvsl6QYXFD/AE87Hn4a0ePNjqOHolHRHJGXDNu1AzHzR0ghf2QN9NKakAkVIG8gVNFjqHJY30cm2lWN5o/E4NWHwPLIcLC8SNLKzlpYQAavv3uJpShFDVcf/plKMcEX1Krlxt3vzf1O5R1MOrLqZrod1C79q8L2d7G+cF6J5kWVPaufNnxYa+JJK/LN4Oyl7VaLjNdUXa+hsmUvaoaNIlbiaUqacNyrzsWSV3RjvaqtUbJkX4Uvb3SCdNDt0PA7Qo6X/KFlUJbr7mRmeZSzNayRjWgEOJFTdwpX2RzKmefLLZpL9+xz6TRYsEnOEm+3t7+f0KI8QN45opHRLG+xnQyA7CtYyTOacWjYswzuGtKkVFwB2VHIrbpZ571eFycOrckw7kLyLWuVkYyiWAqUzFxJhSmUcdiQQqCAECsRQHjPXfmd2JhwoOkUZkd96Q0bzDWfnV+ImcuTs+qHK+yy6NxGsznSnyPdZ+Vo9Vjy2zKR6C1Co0AigIqANANACAEAEIDU5l0dw89b4xU7xoefHmoB590g6oo31dhzQ8G0YfT2T9FZSaJPN846D4zDOraTQ1B9h1RvFdD5gq6miS/Ken2Y4Qhj3mRo9zEAlwHg/R45kjwVqTNo5po77JOtTCS0biGvgdxP2kf4mio5tp4qrx+DeOoi+TuMFjo5mCSGRkjT7zHBw9QqtNcmyafBeoLpDw8zWk3tJrvArpwovJcliz5HnxOSlSTS6ko1w1yt79yM2Kc0uiVV243KHNGpAoCdBwCt6dpvhRk1HpUpNqPhcL7vn6cHRFtJJu35KZGLvcTXr7mG2dpqAQd3/wAJ3+Sq1RwYPW9BnyfDhlV3XdJvwm1T+zIvArWipL6HsxuilzVSjRMi6R1LamnDh/ZLfBKjG7rcqVaLmRhmGrXChoQbaiuh4cD+6tGHcyySVOL225NzFLCJXYgveHuHsFtNAAANnhxXZlyPK4XNpR7JLe+U+b/Q+bj6X0ycowTk9uq+30V0l9vyVNxtSSRSpqqqabPV/wCP0xST4MqOQHYrrcxlB9zIjBKlHPNxi9yYKsVq90SBSyjiSqhWgQAhDPmfpHjDjsylezXtp7I9/dBEcZ/CAVXJKm/p+/7mS33PpPJ8IIo2Rt9ljWsHk0AKqVKjFu2bMKSAKASAruUAdyALkAXIAuQDuQBcgC5AVzQteLXNBB2ggEehUUDlc+6BYXENIDbDuoA5tfun9iEVomzzbP8Aqmmjq6A3D5e9+U970JVviMsmcUcFjMHJcwyRuG10ZcD5ECh5EJ1MvGVcHT5J1rYuOjcSxk7fi/lyerRafw80tM6I55Lnc77JesLA4ig7Xsnn3JqM18H1tPrVK8HTDNCX0OmbMCNCD/ZVOiinFtLmOa06kUUHJ6jp8mo0uTFjdSkqX7+vBhTMe4RxgOaxoFwq20uFdW011qdvFaTkmqR8dD0XW5Z4sDi4QjXVuq27quW/3wXSNWDR+jRkYsm2gqSdAGgknkFfDpZ5m1GtuW9kjHV+oYdJFSy3vwkrb9kil+2hBBG4ggjkVXPpMmGnJbeVui2i9T0+rtYpbrlNNNfZ/wB+Cuq5T0QuUAyo8W7YTUcDQ7duq1jJ9zCWKPKLWSeQ8OHqrpoo1RkRPVzGSNvhZm0AJ1G2v9lvF7HlajHPqbSHLMKqWycGNqLsGvUF2iYepKNErkK0aLpzm38Nl+ImBo4RljD88ncZ6F1eSsttzOeyPGeqjLe2zKNxHdhaZT5gWs/MR6Ln5aRlLZH0Xh9ArGBfcpArkArkBTcoAXIAuQBcgC5AFyAdyALkBK5AFUAigMHMcphnFJo2u8SNR5OGoUUTZwuf9VcEtXQutPB2vK4agedVG5Kkeb591f4vDVNhLR721v4m7OYCWXUjU5dnGMwZpFJJGPgPejP9Dqt/dWtmsMko/Kzs8n61HCjcXDX54v3jcf0dyTY64av+pfg7fKek+FxP8mZpd8B7r/wOo70FFVpnXDJCfys2DnqrN0qKmYh0cgka0O7paWk27SDUHce6F36TNiWN4purd39q3PE9V0WpyZY58CUumLXS3XLTtPzsV4vFOlfe5ttG2gXXmlSdXb1GtzY1j+Fjl1b23wifR9Dnjmep1Eel10pXbq7bbXsq+5jOC8k+lTK6u1LWPcG+0WtJDfMhWWNtWXtKk5JN8W+SUMoIqDoq1REk06ZlRuV0YyMiNy0RjIzY8Qd+vmtEzmlBcrYsY9SVaL2PVjNlgehm0SuUlWjy/rwzSkUGFB9txld5MFrK+Zc4/wBKSdRMMnNEupHLbYZsSRrI8RtPys1P5j9FlHmzDI+x62wqxkSuUgLkArkBVcoAXIAuQBcgC5AO5AFyALkAw9AO9AO5AFyAKoCLggNBm/RPCYjV8QDvib3TzpoeYVa8E2ef571UbXYZ3Hu6AnXQa6c6pbRdSOAzXozicOaSRuqDoaEbOH9wpLdRflfS/G4c2iQvA9yYF/1PeHrRHudWPVZId7R1+V9Y0L6DERuiPFv2jPp3h6FUcfB3Y9bB7S2OpwmPimF0MjXj5SDTzG4+aykmuTuhOMlcXZa4qpoh4PHuiowsLmCTtQWPMb7vm3OG6hXVjzJRopn08czclKpdPTurVfTw/qUh5Jc92hc4uIGwV3clzzl1SNaSiorhKi+N6IzkZEb1ojKRkxvVkYyL2PV0ZMva9SZsta9SUZIOUlGeAdZeZ9vmUxBq2KkLf+v2vzl6rN70csnbZ7T0Gy7+HwUENKERgu+8/vO+pVY8HPJ2zpg5WKjuQCuQBcgKblAC5AFyALkAXIAuQDuQBcgAPQEr0AXIB3IAuQDuQCLkAkBTiMO14te0OB3EAj0KihZyed9X+EnqWtsPhqPQ/sQoplkzz/O+rCeKroe+PDX6bf1QupnHS4LEYd9aPY4e82oI5jVDSGRp2nTNzlnTrFR6SWzN+buv5Pb+4KrKCZ3Y9fOPzbnVZb02wstA9xidwf7P4xp60Wbg+x349Zin3r3OhjlDgHNIIOwggg8wqV5OqyxrlJDLmSKyZm0ZMcq0TMpIyWSKyZi0XserWZtFrXqxm0Y+bZiIMPLO7ZHG59OJaKgczQc1K5KSdKzwLoxgjisdFG/vXyXPPEA3vJ86H1WUnZxPZH0hhNiuc5lXIQFyAVyEhcgKblAC5AFyALkAXIAuQBcgC5AFyAYegHegGHoB3oAuQBcgC5AFyALkBEoDBzDK4ZhSWNrvMa8jtCiibOJzzqzhkq6E2ngdR+Iaj6qNyVKjz7OOg+LgqSwlo94d5pHmNnMBNjRTNLh8TiMM6sbnx+R7p8xsPNQ0dGLPKHys6TLOn8jaDERh4+Jndd6bD9FVwR3Q17/nX4OtyvpRhZ6Bkoa4+4/uO8hXQ8iVXpaOyGfHPhm9ZIhZovjlV0zKSMhkqtZk4l7ZVZMyaON62M0swQhB1meAfuM77vzWDmrXsc+fZUaDqewF08uII0YwMafmean6D6rNcnDkex7NCaBXMiy9CAuQAXISK5AVXKAFyALkAXIAuQBcgHcgC5AFyALkAXIB3IAvQDvQBegC5AK9AO9AF6AV6ALkBFwBQGkzXovhZ63xgE+83unnTQ81FeCbOFzrqwOroHA+B7rvXYfooLqbOHzTo1iIDR7CPvCnodh9UNFk8leAzzFYYgMkcB8Du83kDs5JR049TOPDOryvrEGgxERHzx6jmw6j1Kr0nVHWRfzI6/K89gnH2MrXH4a0cPNp1Tc6FKM/lZtWTKyZVxPKus7Me1xgjB0hYG/1O7zvoWjkpZ52of8AHXg73qwwHZYFhI1lJkPkdG/QBI+Tim9zuWuUlB3KSAuQBcoJFcgKbkA7kAXIAuQBcgC5AO5AFyALkAXIAuQBcgC5AO5AFyALkAXIBXIAuQBcgC5AO5AK5ABKAqmha4EOAIO0EVHoooHM5t0Iw0oNrezJ+H2ebTp6USiUzhs46uZmVMVHj5dD+A/sULqbOQxWVTROoWkEeBa4cjqlGiyGwy7pdjIO72l4Huygu+ujvqh0x1U19fc10bZMViabXzSa04uOvID9FDZzyk5Ntn0FlcAYxrG7GNDR5AUVqpUc7NjchAXKSAuQBchIXKAUXoB3IB3IAuQBcgCqAKoAqgC5AOqAVUAVQDuQBcgC5AFyALkAXIAuQBcgC5AFyALkAXIAuQCqgAoDDx2XRSi2RjXDxAPpwUUDl8f0BgeSYyG10o5okbyrqPOqbkplvRzoTHhXdpUOfuNKAfqapRLk2dXCyikqWXIAuUgLkIC5QSK5Af/Z" // <-- Thay thế URL này (Ảnh: Máy tính bảng)
+        }
+    ];
+
+    let products = [...baseProducts];
+    const productNames = ["Model X", "Series Y", "Turbo Z", "Elite Pro", "Vision 3000", "Stealth Max", "Aura Pro"];
+    const descriptions = [
+        "Sản phẩm mới ra mắt với thiết kế đột phá, hiệu suất ổn định.",
+        "Dành cho dân văn phòng, nhẹ, bền, pin tốt.",
+        "Thiết bị chuyên nghiệp cho người sáng tạo nội dung, đồ họa.",
+        "Giá rẻ, chất lượng tốt, phù hợp cho học sinh/sinh viên.",
+        "Thiết bị cao cấp, vật liệu titan, chống trầy xước.",
+        "Phụ kiện hoàn hảo cho các game thủ chuyên nghiệp.",
+        "Âm thanh tuyệt vời, pin lâu, kiểu dáng hiện đại.",
+    ];
+
+    // Tạo sản phẩm ngẫu nhiên dựa trên dữ liệu cố định đã gán (ID 9-18)
+    dynamicProductData.forEach(data => {
+        const nameSuffix = productNames[Math.floor(Math.random() * productNames.length)];
+        const isHot = Math.random() < 0.2;
+        const isSale = Math.random() < 0.3;
+        const priceBase = Math.floor(Math.random() * 50) + 1; // 1 to 50 million
+        const price = priceBase * 1000000 - (priceBase % 10 * 100000); // Làm tròn dễ nhìn
+        const oldPrice = isSale ? price + Math.floor(Math.random() * 5 + 1) * 1000000 : null;
+        const rating = (Math.random() * 1.5 + 3.5).toFixed(1); // 3.5 to 5.0
+        
+        // Gộp dữ liệu cố định (ID, Category, Image) với dữ liệu ngẫu nhiên (Giá, Tên, Mô tả)
+        products.push({
+            id: data.id,
+            name: `${data.name} (${nameSuffix})`,
+            category: data.category,
+            price: price,
+            oldPrice: oldPrice,
+            description: descriptions[Math.floor(Math.random() * descriptions.length)],
+            rating: parseFloat(rating),
+            isHot: isHot,
+            isSale: isSale,
+            specs: `Thông số cơ bản: RAM ${Math.floor(Math.random() * 8 + 4)}GB, SSD ${Math.floor(Math.random() * 2 + 1) * 512}GB, Pin ${Math.floor(Math.random() * 3000 + 3000)}mAh.`,
+            image: data.image
+        });
+    });
+
+    // Gán lại mảng sản phẩm đã tạo
+    const ALL_PRODUCTS = products;
+
+
+    // --- BIẾN TOÀN CỤC & GIỎ HÀNG & PHÂN TRANG ---
+    let cart = []; 
+    // State quản lý trang hiện tại cho mỗi danh mục
+    const paginationState = {
+        featured: 1,
+        phone: 1,
+        computer: 1,
+        headphone: 1,
+    };
+    // ĐÃ THAY ĐỔI: 6 sản phẩm trên mỗi trang
+    const ITEMS_PER_PAGE = 6; 
+
+    let currentDetailProduct = null; // Sản phẩm đang được xem chi tiết
+
+    // --- CHỨC NĂNG HỖ TRỢ CHUNG ---
+
+    /**
+     * Định dạng số tiền
+     * @param {number} amount
+     * @returns {string}
+     */
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    };
+
+    /**
+     * Hiển thị thông báo (thay cho alert)
+     * @param {string} message
+     * @param {string} type (success, error, info)
+     */
+    const showMessage = (message, type = 'info') => {
+        const msgBox = document.getElementById('message-box');
+        let bgColor = 'bg-gray-600';
+
+        if (type === 'success') bgColor = 'bg-green-600';
+        else if (type === 'error') bgColor = 'bg-red-600';
+        else if (type === 'info') bgColor = 'bg-cyan-600';
+
+        msgBox.className = `fixed bottom-4 right-4 z-[102] p-4 rounded-lg shadow-lg text-white font-medium transition-all duration-300 ${bgColor}`;
+        msgBox.textContent = message;
+
+        // Hiển thị
+        msgBox.classList.remove('translate-x-full', 'opacity-0');
+        msgBox.classList.add('translate-x-0', 'opacity-100');
+
+        // Tự động ẩn sau 3 giây
+        setTimeout(() => {
+            msgBox.classList.remove('translate-x-0', 'opacity-100');
+            msgBox.classList.add('translate-x-full', 'opacity-0');
+        }, 3000);
+    };
+
+    // --- CHỨC NĂNG CHUYỂN VIEW ---
+
+    /**
+     * Chuyển đổi giữa các view (Shop, Contact)
+     * @param {string} viewId 'shop-view' hoặc 'contact-view'
+     */
+    const showView = (viewId) => {
+        document.getElementById('shop-view').classList.add('hidden');
+        document.getElementById('contact-view').classList.add('hidden');
+
+        document.getElementById(viewId).classList.remove('hidden');
+
+        // Đảm bảo render lại sản phẩm khi quay về Shop view
+        if (viewId === 'shop-view') {
+            filterAndSortProducts();
+        }
+    };
+
+    /**
+     * Chuyển đến khu vực sản phẩm cụ thể và cuộn trang
+     * @param {string} sectionId Ví dụ: '#phone-section'
+     */
+    const navigateToSection = (sectionId) => {
+        showView('shop-view');
+        
+        const targetElement = document.getElementById(sectionId.substring(1));
+        
+        if (targetElement) {
+            targetElement.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        } else {
+            showMessage(`Không tìm thấy khu vực sản phẩm: ${sectionId}`, 'error');
+        }
+    };
+
+    // --- CHỨC NĂNG MODAL CHI TIẾT SẢN PHẨM (MỚI) ---
+
+    /**
+     * Hiển thị Modal Chi tiết Sản phẩm
+     * @param {number} productId
+     */
+    const showDetailModal = (productId) => {
+        const product = ALL_PRODUCTS.find(p => p.id === productId);
+
+        if (!product) {
+            showMessage("Lỗi: Không tìm thấy chi tiết sản phẩm này.", 'error');
+            return;
+        }
+
+        currentDetailProduct = product;
+
+        document.getElementById('detail-image').src = product.image;
+        document.getElementById('detail-image').alt = `[Image of Product]`; // Cập nhật alt text
+        document.getElementById('detail-name').textContent = product.name;
+        document.getElementById('detail-category').textContent = `Danh mục: ${product.category}`;
+        
+        // Cập nhật chi tiết mô tả và specs (Xóa content cũ trước)
+        const infoSection = document.querySelector('#detail-modal .md\\:w-1\\/2.p-6.overflow-y-auto .space-y-4');
+        const oldSpecs = infoSection.querySelector('.specs-content');
+        if (oldSpecs) oldSpecs.remove();
+
+        document.getElementById('detail-description').textContent = product.description;
+        document.getElementById('detail-quantity').value = 1; // Reset số lượng
+
+        // Xử lý Rating
+        const ratingStars = '⭐'.repeat(Math.round(product.rating));
+        document.getElementById('detail-rating').innerHTML = `${ratingStars} (${product.rating})`;
+
+        // Xử lý Giá
+        document.getElementById('detail-price').textContent = formatCurrency(product.price);
+        if (product.isSale && product.oldPrice) {
+            document.getElementById('detail-old-price').textContent = formatCurrency(product.oldPrice);
+            document.getElementById('detail-old-price').classList.remove('hidden');
+        } else {
+            document.getElementById('detail-old-price').textContent = '';
+            document.getElementById('detail-old-price').classList.add('hidden');
+        }
+
+        // Thêm Specs (Giả lập thông số kỹ thuật)
+        const specsHtml = `
+            <div class="specs-content space-y-2">
+                <h4 class="text-lg font-semibold mt-4 text-cyan-500">Thông số kỹ thuật:</h4>
+                <p class="text-sm text-gray-400">${product.specs}</p>
+            </div>
+        `;
+        document.getElementById('detail-description').closest('.space-y-4').querySelector('#detail-price-block').insertAdjacentHTML('beforebegin', specsHtml);
+        
+        // Hiển thị modal
+        document.getElementById('detail-modal').classList.remove('hidden');
+        document.getElementById('detail-modal').classList.add('flex');
+    };
+
+    /**
+     * Đóng Modal Chi tiết Sản phẩm
+     */
+    const closeDetailModal = () => {
+        document.getElementById('detail-modal').classList.remove('flex');
+        document.getElementById('detail-modal').classList.add('hidden');
+        currentDetailProduct = null;
+    };
+    
+    /**
+     * Thêm sản phẩm từ Modal Chi tiết vào Giỏ hàng
+     */
+    const addToCartFromDetail = () => {
+        if (!currentDetailProduct) return;
+        
+        const quantityInput = document.getElementById('detail-quantity');
+        const quantity = parseInt(quantityInput.value);
+
+        if (isNaN(quantity) || quantity <= 0) {
+            showMessage("Số lượng không hợp lệ.", 'error');
+            return;
+        }
+
+        // Tái sử dụng logic addToCart, nhưng với số lượng tùy chỉnh
+        const existingItem = cart.find(item => item.id === currentDetailProduct.id);
+
+        if (existingItem) {
+            existingItem.quantity += quantity;
+        } else {
+            cart.push({
+                id: currentDetailProduct.id,
+                name: currentDetailProduct.name,
+                price: currentDetailProduct.price,
+                quantity: quantity,
+                image: currentDetailProduct.image
+            });
+        }
+
+        updateCartUI();
+        showMessage(`Đã thêm ${quantity} sản phẩm "${currentDetailProduct.name}" vào giỏ hàng!`, 'success');
+        closeDetailModal();
+    };
+
+    // --- CHỨC NĂNG RENDER & LỌC SẮP XẾP SẢN PHẨM ---
+
+    /**
+     * Tạo HTML cho 1 thẻ sản phẩm
+     * (Cập nhật: Thêm onclick để mở modal chi tiết)
+     * @param {object} product
+     * @returns {string}
+     */
+    const createProductCard = (product) => {
+        const priceDisplay = product.isSale && product.oldPrice
+            ? `<div class="flex items-center space-x-2">
+                <span class="text-2xl font-bold neon-text">${formatCurrency(product.price)}</span>
+                <span class="text-sm line-through text-gray-400">${formatCurrency(product.oldPrice)}</span>
+               </div>`
+            : `<span class="text-2xl font-bold neon-text">${formatCurrency(product.price)}</span>`;
+
+        const tag = product.isHot
+            ? `<span class="absolute top-2 right-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full">HOT</span>`
+            : product.isSale
+            ? `<span class="absolute top-2 right-2 bg-yellow-500 text-gray-900 text-xs font-semibold px-2 py-1 rounded-full animate-pulse">SALE</span>`
+            : '';
+
+        const ratingStars = '⭐'.repeat(Math.round(product.rating));
+
+        return `
+            <div id="product-${product.id}" onclick="showDetailModal(${product.id})" class="product-card rounded-xl overflow-hidden relative opacity-100">
+                ${tag}
+                <!-- Ảnh Sản phẩm -->
+                <div class="h-48 overflow-hidden bg-gray-900 flex items-center justify-center">
+                    <img src="${product.image}" onerror="this.onerror=null;this.src='https://placehold.co/400x200/0f172a/e2e8f0?text=Kh%C3%B4ng+%E1%BA%A2nh';" alt="" class="w-full h-full object-cover p-4">
+                </div>
+                
+                <div class="p-4 space-y-3">
+                    <!-- Tên & Đánh giá -->
+                    <h3 class="text-lg font-semibold text-gray-50">${product.name}</h3>
+                    <p class="text-yellow-400 text-sm">${ratingStars} (${product.rating})</p>
+                    
+                    <!-- Mô tả -->
+                    <p class="text-sm text-gray-400 h-10 overflow-hidden line-clamp-2" title="${product.description}">
+                        ${product.description}
+                    </p>
+
+                    <!-- Giá -->
+                    ${priceDisplay}
+                    
+                    <!-- Nút Thêm Giỏ Hàng -->
+                    <button onclick="event.stopPropagation(); addToCart(${product.id})" class="btn-primary w-full p-2 rounded-lg text-sm flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Thêm vào Giỏ hàng
+                    </button>
+                </div>
+            </div>
+        `;
+    };
+
+    /**
+     * Sắp xếp danh sách sản phẩm
+     */
+    const sortProducts = (productArray, sortBy) => {
+        return [...productArray].sort((a, b) => {
+            if (sortBy === 'price-asc') {
+                return a.price - b.price;
+            } else if (sortBy === 'price-desc') {
+                return b.price - a.price;
+            } else if (sortBy === 'rating-desc') {
+                return b.rating - a.rating;
+            } else { // default (ID)
+                return a.id - b.id;
+            }
+        });
+    };
+
+    /**
+     * Tạo HTML cho các nút phân trang
+     * @param {string} categoryKey
+     * @param {number} totalItems
+     * @param {number} currentPage
+     * @param {number} itemsPerPage
+     */
+    const createPaginationControls = (categoryKey, totalItems, currentPage, itemsPerPage) => {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        const paginationContainer = document.getElementById(`${categoryKey}-pagination`);
+        paginationContainer.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        const prevBtn = `<button onclick="goToPage('${categoryKey}', ${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="pagination-btn bg-gray-700 text-white p-2 rounded-lg hover:bg-cyan-700 transition">Trang trước</button>`;
+        const nextBtn = `<button onclick="goToPage('${categoryKey}', ${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="pagination-btn bg-gray-700 text-white p-2 rounded-lg hover:bg-cyan-700 transition">Trang sau</button>`;
+        const status = `<span class="text-gray-400">Trang ${currentPage} / ${totalPages} (${totalItems} sản phẩm)</span>`;
+
+        paginationContainer.innerHTML = prevBtn + status + nextBtn;
+    };
+
+    /**
+     * Chuyển trang cho một danh mục cụ thể
+     * @param {string} categoryKey
+     * @param {number} page
+     */
+    const goToPage = (categoryKey, page) => {
+        paginationState[categoryKey] = page;
+        filterAndSortProducts();
+    };
+
+    /**
+     * Render danh sách sản phẩm theo từng khu vực (Cập nhật: Thêm logic Phân trang)
+     * @param {Array<object>} filteredProducts
+     */
+    const renderProducts = (filteredProducts) => {
+        // Tách sản phẩm thành 4 danh mục để phân trang độc lập
+        const productMap = {
+            'featured': filteredProducts.filter(p => p.isHot || p.isSale),
+            // Các sản phẩm còn lại được chia theo Category, loại trừ những sản phẩm đã là Hot/Sale
+            'phone': filteredProducts.filter(p => p.category === "Điện thoại" && !p.isHot && !p.isSale),
+            'computer': filteredProducts.filter(p => p.category === "Máy tính" && !p.isHot && !p.isSale),
+            'headphone': filteredProducts.filter(p => p.category === "Phụ kiện & Âm thanh" && !p.isHot && !p.isSale),
+        };
+
+        const lists = [
+            document.getElementById('featured-products-list'),
+            document.getElementById('phone-products-list'),
+            document.getElementById('computer-products-list'),
+            document.getElementById('headphone-products-list')
+        ];
+        
+        // 1. Hiệu ứng tải/lọc
+        lists.forEach(list => list.style.opacity = '0.3');
+
+        // 2. Render sản phẩm sau delay
+        setTimeout(() => {
+            let hasResults = false;
+            
+            for (const key in productMap) {
+                const list = document.getElementById(`${key}-products-list`);
+                const allItems = productMap[key];
+                
+                // --- Logic Phân trang ---
+                const currentPage = paginationState[key];
+                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+                const endIndex = startIndex + ITEMS_PER_PAGE;
+                const itemsToShow = allItems.slice(startIndex, endIndex);
+
+                // --- Render HTML ---
+                if (itemsToShow.length > 0) {
+                    list.innerHTML = itemsToShow.map(createProductCard).join('');
+                    hasResults = true;
+                } else {
+                    // Hiển thị thông báo nếu không có sản phẩm nào
+                    const columnSpan = list.classList.contains('lg:grid-cols-3') ? 'col-span-3' : 'col-span-4';
+                    list.innerHTML = `<p class="${columnSpan} text-center text-gray-500 py-8">Không có sản phẩm nào ở trang này hoặc không có sản phẩm phù hợp.</p>`;
+                }
+                
+                // --- Render Pagination ---
+                createPaginationControls(key, allItems.length, currentPage, ITEMS_PER_PAGE);
+            }
+
+            if (!hasResults && filteredProducts.length > 0) {
+                 // Không cần showMessage vì đã có thông báo trong từng khu vực nếu không có sản phẩm
+            }
+
+            // 3. Xóa hiệu ứng tải
+            lists.forEach(list => list.style.opacity = '1');
+        }, 300); 
+    };
+
+    /**
+     * Lọc và Sắp xếp Sản phẩm (Hàm Tổng hợp)
+     */
+    const filterAndSortProducts = () => {
+        const searchText = document.getElementById('search-text').value.toLowerCase();
+        // Lấy giá trị từ input và đảm bảo nó là số hợp lệ
+        const minPrice = parseFloat(document.getElementById('min-price').value) || 0;
+        // Đặt giá trị mặc định tối đa cao hơn để không loại trừ sản phẩm max
+        const maxPrice = parseFloat(document.getElementById('max-price').value) || 100000000; 
+        const sortBy = document.getElementById('sort-by').value;
+
+        // 1. Lọc
+        let filtered = ALL_PRODUCTS.filter(product => {
+            // 1.1 Lọc theo văn bản (Tên, Mô tả, Category)
+            const textMatch = (
+                product.name.toLowerCase().includes(searchText) ||
+                product.description.toLowerCase().includes(searchText) ||
+                product.category.toLowerCase().includes(searchText)
+            );
+
+            // 1.2 Lọc theo chỉ số (Giá)
+            const price = product.price;
+            const priceMatch = (price >= minPrice && price <= maxPrice);
+
+            return textMatch && priceMatch;
+        });
+
+        // 2. Sắp xếp (Chỉ sắp xếp các sản phẩm đã lọc)
+        const sortedProducts = sortProducts(filtered, sortBy);
+
+        // 3. Render
+        renderProducts(sortedProducts);
+
+        // Reset về trang 1 nếu kết quả lọc thay đổi (Đơn giản hóa)
+        // Tạm thời bỏ qua reset để giữ trạng thái phân trang trừ khi người dùng tự chuyển.
+    };
+
+    // --- CHỨC NĂNG GIỎ HÀNG ---
+
+    /**
+     * Lưu giỏ hàng vào Local Storage
+     */
+    const saveCart = () => {
+        // Lưu ý: Trong ứng dụng thực tế, nên dùng Firebase hoặc cơ sở dữ liệu khác thay vì Local Storage.
+        localStorage.setItem('technovaCart', JSON.stringify(cart));
+    };
+
+    /**
+     * Thêm sản phẩm vào giỏ hàng
+     * @param {number} productId
+     */
+    const addToCart = (productId) => {
+        const product = ALL_PRODUCTS.find(p => p.id === productId);
+
+        if (!product) {
+            showMessage("Lỗi: Không tìm thấy sản phẩm này.", 'error');
+            return;
+        }
+
+        const existingItem = cart.find(item => item.id === productId);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                quantity: 1,
+                image: product.image
+            });
+        }
+
+        updateCartUI();
+        showMessage(`Đã thêm "${product.name}" vào giỏ hàng!`, 'success');
+    };
+
+    /**
+     * Xóa sản phẩm khỏi giỏ hàng
+     * @param {number} productId
+     */
+    const removeItemFromCart = (productId) => {
+        const itemIndex = cart.findIndex(item => item.id === productId);
+        if (itemIndex > -1) {
+            const itemName = cart[itemIndex].name;
+            cart.splice(itemIndex, 1);
+            updateCartUI();
+            showMessage(`Đã xóa "${itemName}" khỏi giỏ hàng.`, 'info');
+        }
+    };
+    
+    /**
+     * Cập nhật số lượng sản phẩm trong giỏ hàng
+     * @param {number} productId
+     * @param {number} newQuantity
+     * * LƯU Ý: Hàm này được gọi từ Modal Giỏ hàng
+     */
+    const updateQuantity = (productId, newQuantity) => {
+        const item = cart.find(item => item.id === productId);
+
+        if (item) {
+            // Đảm bảo số lượng là số nguyên dương
+            newQuantity = parseInt(newQuantity);
+            if (isNaN(newQuantity)) return;
+
+            if (newQuantity <= 0) {
+                removeItemFromCart(productId);
+            } else {
+                item.quantity = newQuantity;
+                updateCartUI();
+            }
+        }
+    };
+
+    /**
+     * Cập nhật giao diện giỏ hàng và tổng tiền
+     */
+    const updateCartUI = () => {
+        const cartList = document.getElementById('cart-items-list');
+        const cartTotalSpan = document.getElementById('cart-total');
+        const cartCountSpan = document.getElementById('cart-count');
+
+        let total = 0;
+        let totalItems = 0;
+        cartList.innerHTML = '';
+
+        if (cart.length === 0) {
+            cartList.innerHTML = '<p class="text-center text-gray-400 py-8">Giỏ hàng trống.</p>';
+        } else {
+            cart.forEach(item => {
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+                totalItems += item.quantity;
+
+                const itemHtml = `
+                    <div class="flex items-center space-x-4 p-3 bg-gray-900 rounded-lg shadow">
+                        <img src="${item.image}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/0f172a/e2e8f0?text=I';" alt="" class="w-12 h-12 object-cover rounded-md border border-gray-700">
+                        <div class="flex-grow">
+                            <h4 class="font-medium text-gray-50">${item.name}</h4>
+                            <p class="text-sm text-gray-400">${formatCurrency(item.price)}</p>
+                        </div>
+                        <div class="flex flex-col items-end space-y-1">
+                            <!-- Nút điều chỉnh số lượng -->
+                            <div class="flex items-center bg-gray-700 rounded-lg p-1">
+                                <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})" class="text-gray-400 hover:text-red-500 w-6 h-6 flex items-center justify-center font-bold text-lg leading-none rounded-l-md">&minus;</button>
+                                <span class="text-white w-8 text-center">${item.quantity}</span>
+                                <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})" class="text-gray-400 hover:text-cyan-500 w-6 h-6 flex items-center justify-center font-bold text-lg leading-none rounded-r-md">&plus;</button>
+                            </div>
+                            <span class="font-semibold text-sm neon-text">${formatCurrency(subtotal)}</span>
+                            <button onclick="removeItemFromCart(${item.id})" class="text-red-500 hover:text-red-400 text-xs">Xóa khỏi giỏ</button>
+                        </div>
+                    </div>
+                `;
+                cartList.innerHTML += itemHtml;
+            });
+        }
+
+        cartTotalSpan.textContent = formatCurrency(total);
+        cartCountSpan.textContent = totalItems.toString();
+        
+        // Lưu trạng thái giỏ hàng
+        saveCart();
+    };
+
+    /**
+     * Mở/Đóng Modal Giỏ Hàng
+     */
+    const toggleCartModal = () => {
+        const modal = document.getElementById('cart-modal');
+        modal.classList.toggle('hidden');
+        modal.classList.toggle('flex');
+        updateCartUI(); // Đảm bảo giỏ hàng được cập nhật mỗi khi mở
+    };
+
+    /**
+     * Xử lý Thanh Toán
+     */
+    const checkout = () => {
+        if (cart.length === 0) {
+            showMessage("Giỏ hàng của bạn đang trống! Vui lòng thêm sản phẩm.", 'error');
+            return;
+        }
+
+        const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+        // Hiển thị thông báo thanh toán thành công
+        showMessage(`Thanh toán thành công! Tổng tiền: ${formatCurrency(total)}. Cảm ơn bạn!`, 'success');
+
+        // Reset giỏ hàng
+        cart = [];
+        updateCartUI();
+        toggleCartModal();
+    };
+
+    // --- CHỨC NĂNG KHÁC ---
+
+    /**
+     * Xử lý gửi Form Liên Hệ
+     * @param {Event} event
+     */
+    const handleContactSubmit = (event) => {
+        event.preventDefault();
+        
+        const name = document.getElementById('contact-name').value;
+        const email = document.getElementById('contact-email').value;
+
+        const msgBox = document.getElementById('contact-message-box');
+
+        // Giả lập gửi thành công
+        msgBox.innerHTML = `<strong>Gửi thành công!</strong><br>Chúng tôi đã nhận được yêu cầu của bạn, ${name} (Email: ${email}). Chúng tôi sẽ phản hồi sớm nhất.`;
+        msgBox.className = 'mt-4 p-3 rounded-lg text-sm bg-green-900 border border-green-500 text-green-200';
+        msgBox.classList.remove('hidden');
+
+        // Reset form
+        // Dữ liệu người dùng có thể dùng lại, nên chỉ reset message
+        // document.getElementById('contact-name').value = '';
+        // document.getElementById('contact-email').value = '';
+        document.getElementById('contact-message').value = '';
+
+        // Tự động ẩn thông báo sau 5 giây
+        setTimeout(() => {
+            msgBox.classList.add('hidden');
+        }, 5000);
+    };
+
+    // --- KHỞI TẠO (Load từ Local Storage) ---
+    window.onload = () => {
+        // 1. Tải giỏ hàng từ Local Storage
+        const storedCart = localStorage.getItem('technovaCart');
+        if (storedCart) {
+            try {
+                cart = JSON.parse(storedCart);
+                // Comment out showMessage on load to reduce clutter
+                // showMessage("Đã tải giỏ hàng đã lưu trước đó.", 'info');
+            } catch (e) {
+                console.error("Lỗi khi parse giỏ hàng:", e);
+                cart = [];
+            }
+        }
+
+        // 2. Render sản phẩm (sử dụng hàm tổng hợp để áp dụng filter mặc định)
+        filterAndSortProducts(); 
+        
+        // 3. Cập nhật giỏ hàng UI
+        updateCartUI(); 
+    };
+
+</script>
+
+</body>
+</html>
